@@ -1,0 +1,53 @@
+version: "3.4"
+services:
+        proxy:
+            container_name: proxy 
+            build: ./nginx
+            ports:
+                - "${PROXY_HTTP_PORT}:80"
+        keycloak_db:
+            container_name: keycloak_db
+            image: postgres:10 
+            ports:
+                - "${POSTGRES_PORT}:5432"
+            environment:
+                POSTGRES_DB: ${KEYCLOAK_DB} 
+                POSTGRES_USER: ${KEYCLOAK_DB_USER} 
+                POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+                POSTGRES_ROOT_PASSWORD: ${POSTGRES_ROOT_PASSWORD}
+        keycloak-master:
+            container_name: keycloak-master
+            build: ./keycloak-master
+            ports: 
+                - "${KC_MASTER_HTTP_PORT}:8230"
+                - "${KC_MASTER_MANAGEMENT_PORT}:9990"
+                - "${JVM_MASTER_DEBUG_PORT}:8787"
+            environment:
+                DB_ADDR: keycloak_db
+                DB_PORT: 5432
+                DB_DATABASE: ${KEYCLOAK_DB}
+                DB_USER: ${KEYCLOAK_DB_USER}
+                DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+                KEYCLOAK_USER: ${KEYCLOAK_USER}
+                KEYCLOAK_PASSWORD: ${KEYCLOAK_PASSWORD}
+                KEYCLOAK_MGMT_USER: ${KEYCLOAK_MGMT_USER}
+                KEYCLOAK_MGMT_PASSWORD: ${KEYCLOAK_MGMT_PASSWORD}
+            depends_on:
+                - keycloak_db
+        keycloak-slave01:
+            container_name: keycloak-slave01
+            build: ./keycloak-slave01
+            ports: 
+                - "${KC_SLAVE01_HTTP_PORT}:8330"
+                - "${JVM_SLAVE01_DEBUG_PORT}:8787"
+            environment:
+                DB_ADDR: keycloak_db
+                DB_PORT: 5432
+                DB_DATABASE: ${KEYCLOAK_DB}
+                DB_USER: ${KEYCLOAK_DB_USER}
+                DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+                KEYCLOAK_MGMT_USER: ${KEYCLOAK_MGMT_USER}
+                KEYCLOAK_MGMT_SECRET: ${KEYCLOAK_MGMT_SECRET}
+            depends_on:
+                - keycloak_db
+                - keycloak-master
