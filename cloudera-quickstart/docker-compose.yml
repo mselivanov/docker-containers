@@ -1,0 +1,17 @@
+version: "3.4"
+services:
+        quickstart.cloudera:
+            container_name: cloudera 
+            build: .
+            ports: 
+                - "8080:8080"
+                - "7180:7180"
+                - "7183:7183"
+                - "7187:7187"
+                - "10000:10000"
+                - "8888:8888"
+                - "32080:80"
+                - "3306:3306"
+                - "11000:11000"
+                - "50070:50070"
+            privileged: true
